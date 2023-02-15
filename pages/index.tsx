@@ -3,13 +3,26 @@ import { useEffect, useState } from "react";
 import { generate } from "../services/generate";
 import styles from "./index.module.css";
 import ChatList from "./ChatList";
-interface ConversationListItem {
+import dog from './dog.png'
+import Image from 'next/image'
+export interface ConversationListItem {
   choices: { text: string }[];
   id?: string;
+  date?: string
+}
+function formatDate(date: Date): string {
+  if (!date || !(date instanceof Date)) return;
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  const h = date.getHours();
+  const minutes = date.getMinutes();
+
+  return `${y}-${m}-${d} ${h}:${minutes >= 10 ? minutes : "0" + minutes}`;
 }
 export default function Home() {
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState();
+  const [errorMessage, setErrorMessage] = useState("");
   const [questionInput, setquestionInput] = useState("");
   const [conversationList, setconversationList] = useState<
     ConversationListItem[]
@@ -32,18 +45,22 @@ export default function Home() {
 
   useEffect(() => {
     if (loading) {
+      setquestionInput('')
       handleGenerate();
     }
   }, [loading]);
 
   useEffect(() => {
     setconversationListToCache();
+    scrollToBottom();
   }, [conversationList?.length]);
 
   async function onSubmit(event) {
     event.preventDefault();
+    if (!questionInput) return;
     const newList = conversationList.slice(0);
     newList.push({
+      date: formatDate(new Date()),
       choices: [{ text: questionInput }],
     });
     setLoading(true);
@@ -55,8 +72,12 @@ export default function Home() {
     const prompt = generatePrompt();
     const data = await generate(prompt);
     if (data.result) {
-      newList.push(data.result);
+      newList.push({
+        ...data.result,
+        date: formatDate(new Date())
+      });
       setconversationList(newList);
+      setErrorMessage("");
     }
     if (data.error) {
       setErrorMessage(data.error?.message);
@@ -86,20 +107,31 @@ export default function Home() {
     }
     return prompt;
   }
+
   function setconversationListToCache() {
     localStorage.setItem("conversationList", JSON.stringify(conversationList));
+  }
+
+  function scrollToBottom() {
+    if (!document || !window) return;
+    const t = document.body.clientHeight;
+    window.scroll({ top: t, behavior: "smooth" });
+  }
+
+  function clear() {
+    localStorage.removeItem("conversationList");
+    setconversationList([])
   }
   return (
     <div>
       <Head>
-        <title>OpenAI Quickstart</title>
-        <link rel="icon" href="/dog.png" />
+        <title>Chat</title>
       </Head>
       <main className={styles.main}>
-        <img src="/dog.png" className={styles.icon} />
+        <Image src={dog} className={styles.icon} alt="" />
         <h3>Chat with me</h3>
         <ChatList conversationList={conversationList} />
-        <form onSubmit={onSubmit}>
+        <form className="form" onSubmit={onSubmit}>
           <input
             type="text"
             name="question"
@@ -120,6 +152,9 @@ export default function Home() {
           </div>
         </div>
       )}
+      <div className="clear" onClick={clear}>
+        Clear
+      </div>
     </div>
   );
 }

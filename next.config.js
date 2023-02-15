@@ -1,3 +1,6 @@
 module.exports = {
-    basePath: '/chat',
-  }
+  basePath: '/chat',
+  images: {
+    formats: ["image/webp"],
+  },
+};

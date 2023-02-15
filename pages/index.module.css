@@ -28,6 +28,7 @@
 }
 .main .icon {
   width: 34px;
+  height: auto;
 }
 .main h3 {
   font-size: 32px;
@@ -45,7 +46,7 @@
   .main form {
     display: flex;
     flex-direction: column;
-    width: 300px;
+    width: 90%;
   }
 }
 .main input[type="text"] {
