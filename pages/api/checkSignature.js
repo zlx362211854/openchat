@@ -47,83 +47,17 @@ function signatureHandler(req, res) {
   }
 }
 
-function messageHandler(req, res) {
-  try {
-    var buffer = [];
-    //监听 data 事件 用于接收数据
-    req.on("data", function (data) {
-      buffer.push(data);
-    });
-    //监听 end 事件 用于处理接收完成的数据
-    req.on("end", function () {
-      //输出接收完成的数据
-      parseString(
-        Buffer.concat(buffer).toString("utf-8"),
-        { explicitArray: false },
-        async function (err, result) {
-          if (err) {
-            console.log(err);
-          } else {
-            //打印解析结果
-            result = result.xml;
-            var toUser = result.ToUserName; //接收方微信
-            var fromUser = result.FromUserName; //发送方微信
-            //判断是否是事件类型
-            if (result.Event) {
-              //处理事件类型
-              switch (result.Event) {
-                case "subscribe":
-                  //关注公众号
-                  break;
-                default:
-              }
-            } else {
-              //处理消息类型
-              switch (result.MsgType) {
-                case "text":
-                  //处理文本消息
-                  const completion = await openai.createCompletion({
-                    model: "text-davinci-003",
-                    prompt: result.Content,
-                    temperature: 0.9,
-                    max_tokens: 3000,
-                    // logprobs: 0,
-                    // top_p: 1,
-                    // echo: true,
-                    frequency_penalty: 0.0,
-                    presence_penalty: 0.6,
-                    stop: [' Human:', ' AI:'],
-                  });
-                  res.send(textMsg(toUser, fromUser, completion.data.result?.choices?.[0]?.text || result.Content))
-                  break;
-                case "image":
-                  //处理图片消息
-                  break;
-                case "voice":
-                  //处理语音消息
-                  break;
-                case "video":
-                  //处理视频消息
-                  break;
-                case "shortvideo":
-                  //处理小视频消息
-                  break;
-                case "location":
-                  //处理发送地理位置
-                  break;
-                case "link":
-                  //处理点击链接消息
-                  break;
-                default:
-              }
-            }
-          }
-        }
-      );
-    });
-  } catch (err) {
-    res.send(err);
-  }
+async function messageHandler(req, res) {
+    const xmlData = await getUserDataAsync(req)
+    console.log(xmlData);
+     //解析xml数据
+     const jsData = await parseXMLAsync(xmlData)
+     //格式化数据
+     const message = formatMessage(jsData)
+     console.log(message);
+     if(message.MsgType==='text'){
+        res.send(textMsg('hello world'))
+     }
 }
 
 
@@ -135,3 +69,46 @@ function textMsg(toUser, fromUser, content) {
   resultXml += "<Content><![CDATA[" + content + "]]></Content></xml>";
   return resultXml;
 }
+
+
+function getUserDataAsync(req) {
+    return new Promise((resolve, reject) => {
+      let xmlData = ''
+      req.on('data', data => {
+        //
+        console.log(data);
+        xmlData += data.toString()
+      })
+        .on('end', () => {
+          //当数据接收完毕，会触发当前函数
+          resolve(xmlData)
+        })
+    })
+  }
+  function parseXMLAsync(xmlData) {
+    return new Promise((resolve, reject) => {
+      parseString(xmlData, { trim: true }, (err, data) => {
+        if (!err) {
+          resolve(data)
+        } else {
+          reject('parseXMLtoJS' + err)
+        }
+      })
+    })
+  }
+function formatMessage(jsData) {
+    let message = {}
+    //获取xml对象
+    jsData = jsData.xml
+    //判断是否是一个对象
+    if (typeof jsData === 'object') {
+      //遍历对象
+      for (let key in jsData) {
+        let value = jsData[key]
+        if (Array.isArray(value) && value.length > 0) {
+          message[key] = value[0]
+        }
+      }
+    }
+    return message
+  }
