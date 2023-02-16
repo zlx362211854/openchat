@@ -25,17 +25,24 @@ export default async function (req, res) {
     });
     return;
   }
-
   try {
-    const completion = await openai.createCompletion({
-      model: "text-davinci-003",
+    const response = await openai.createImage({
       prompt: question,
-      temperature: 0.9,
-      max_tokens: 3000,
-      frequency_penalty: 0.0,
-      presence_penalty: 0.6,
+      n: 1,
+      size: "512x512",
     });
-    res.status(200).json({ result: completion.data });
+    const image_url = response.data?.data?.[0]?.url;
+    res.status(200).json({
+      result: {
+        skipInGeneration: true,
+        choices: [
+          {
+            text: image_url,
+            isImage: true,
+          },
+        ],
+      },
+    });
   } catch (error) {
     handleError(res, error);
   }

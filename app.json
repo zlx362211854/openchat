@@ -1,0 +1,20 @@
+{
+    "apps": [
+      {
+        "name": "open chat",
+        "script": "npm run start",
+        "env": {
+          "OPENAI_API_KEY": "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"
+        },
+        "env_production": {
+          "NODE_ENV": "production"
+        },
+        "instances": 2,
+        "log_date_format" : "YYYY-MM-DD HH:mm Z",
+        "combine_logs" : true,
+        "log_file": "/woorkspace/log/open.log",
+        "out_file": "/woorkspace/log/out.log",
+        "error_file": "/woorkspace/log/err.log"
+      }
+    ]
+  }

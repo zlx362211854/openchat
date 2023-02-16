@@ -1,5 +1,5 @@
-$green: #86BB71;
-$blue: #94C2ED;
+$green: #009688;
+$blue: #004d40;
 $orange: #E38968;
 $gray: #92959E;
 
@@ -26,9 +26,39 @@ body {
   margin-bottom: 80px;
 
 }
+.tabs {
+  width: 600px;
+  height: 50px;
+  line-height: 50px;
+  display: flex;
+  .tab {
+    text-align: center;
+    width: 50%;
+    font-size: 16px;
+    color: #fff;
+    cursor: pointer;
+    background-color: #80cbc4;
+  }
+  .tab.active {
+    font-weight: 600;
+    color: #fff;
+    background-color: #26a69a;
+  }
+}
+@media screen and (max-width: 600px) { 
+  .tabs {
+    width: 300px;
+  }
+}
+.formContainer {
+  width: 100%;
+  background-color: #C5DDEB;
+  position: fixed;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+}
 .form {
-    position: fixed;
-    bottom: 0;
     background-color: #C5DDEB;
     padding: 20px 0;
 }
@@ -75,7 +105,9 @@ body {
     cursor: pointer;
   }
 }
-
+.img {
+  width: 100%;
+}
 .chat {
   background: #F2F5F8;
   border-radius: 5px;
