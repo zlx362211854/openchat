@@ -6,6 +6,7 @@ import ChatList from "./ChatList";
 import dog from "./dog.png";
 import Image from "next/image";
 import { draw } from "../services/draw";
+import Popup from "reactjs-popup";
 type chatType = "chat" | "draw";
 export interface ConversationListItem {
   choices: { text: string; isImage?: boolean }[];
@@ -209,12 +210,17 @@ export default function Home() {
   function changeChatType(type: chatType) {
     setChatType(type);
   }
-
+  const ErrorModal = () => (
+    <Popup open={!!errorMessage} closeOnDocumentClick>
+      <div className={styles.error}>{errorMessage}</div>
+    </Popup>
+  );
   return (
     <div>
       <Head>
         <title>Chat</title>
       </Head>
+      <ErrorModal />
       <main className={styles.main}>
         <Image src={dog} className={styles.icon} alt="" />
         <h3>Chat with me</h3>
@@ -237,8 +243,7 @@ export default function Home() {
         />
         <div className="formContainer">
           <form className="form" onSubmit={onSubmit}>
-            <input
-              type="text"
+            <textarea
               name="question"
               placeholder="输入问题如：什么是贷款利率，或画一只小猫"
               value={questionInput}
@@ -248,7 +253,7 @@ export default function Home() {
           </form>
         </div>
       </main>
-      <div className={styles.error}>{errorMessage}</div>
+      
       {loading && (
         <div className="cover">
           <div className="box">

@@ -1,18 +1,66 @@
 import { ConversationListItem } from ".";
+import { useLongPress } from "use-long-press";
+import Popup from "reactjs-popup";
+import "reactjs-popup/dist/index.css";
+import { useState } from "react";
+import { handleCopyImg } from "../utils/imageService";
+import { saveImage } from "../services/saveImage";
 
 interface Props {
   conversationList: ConversationListItem[];
 }
 export default function ChatList(props: Props) {
+  const [open, setOpen] = useState<boolean>(false);
+  const [copyText, setCopyText] = useState<string>();
+  const [isImage, setIsImage] = useState<boolean>(false);
+  const longPress = useLongPress((e) => {
+    // @ts-ignore
+    if (e.target?.className === "img") {
+      // @ts-ignore
+      setCopyText(e.target?.currentSrc);
+      setIsImage(true);
+    } else {
+      // @ts-ignore
+      setCopyText(e.target?.innerText);
+      setIsImage(false)
+    }
+    setOpen(true);
+  });
+  const closeModal = () => {
+    setOpen(false);
+  };
+  const copy = async () => {
+    if (isImage) {
+      const {url} = await handleSaveImg(copyText)
+      handleCopyImg(url, () => {}, 512, 512)
+    } else {
+      await navigator.clipboard.writeText(copyText);
+    }
+  };
+
+  const handleSaveImg = async (imgUrl: string) => {
+    const {result} = await saveImage(imgUrl)
+    return result
+  }
+  const Modal = () => (
+    <Popup open={open} closeOnDocumentClick onClose={closeModal}>
+      <div className="menu">
+        <div className="menu-item" onClick={copy}>
+          复制
+        </div>
+      </div>
+    </Popup>
+  );
   return (
     <div className="container clearfix">
+      <Modal />
       <div className="chat">
         <div className="chat-history">
           <ul>
             {props.conversationList?.map((message, index) => {
               if (message?.id || message?.choices?.[0]?.isImage) {
                 return (
-                  <li key={index}>
+                  <li key={index} {...longPress()}>
                     <div className="message-data">
                       <span className="message-data-name">
                         <i className="fa fa-circle online"></i> AI:
@@ -34,7 +82,7 @@ export default function ChatList(props: Props) {
                 );
               }
               return (
-                <li className="clearfix" key={index}>
+                <li className="clearfix" key={index} {...longPress()}>
                   <div className="message-data align-right">
                     <span className="message-data-name">我:</span>{" "}
                     <i className="fa fa-circle me"></i>
