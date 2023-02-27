@@ -5,7 +5,7 @@ import path from "path";
 export default async function (request, response) {
   const url = request.body.url;
   const name = url.match(/(img-)(.*?)(?=\.)/)?.[2];
-  const localPath = path.resolve(__dirname) + `../../../../static/media/${name}.png`;
+  const localPath = path.resolve(__dirname) + `/../../../static/media/${name}.png`;
   await https.get(url, function (req, res) {
     var imgData = "";
     req.setEncoding("binary");
