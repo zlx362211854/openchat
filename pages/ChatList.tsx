@@ -8,6 +8,8 @@ import { saveImage } from "../services/saveImage";
 
 interface Props {
   conversationList: ConversationListItem[];
+  showLoading: () => void;
+  hideLoading: () => void;
 }
 export default function ChatList(props: Props) {
   const [open, setOpen] = useState<boolean>(false);
@@ -25,17 +27,22 @@ export default function ChatList(props: Props) {
       setIsImage(false)
     }
     setOpen(true);
+  }, {
+    threshold: 1500
   });
   const closeModal = () => {
     setOpen(false);
   };
   const copy = async () => {
+    setOpen(false);
+    props.showLoading()
     if (isImage) {
       const {url} = await handleSaveImg(copyText)
-      handleCopyImg(url, () => {}, 512, 512)
+      await handleCopyImg(url, () => {}, 512, 512)
     } else {
       await navigator.clipboard.writeText(copyText);
     }
+    props.hideLoading()
   };
 
   const handleSaveImg = async (imgUrl: string) => {

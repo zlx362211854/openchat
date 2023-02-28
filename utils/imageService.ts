@@ -19,13 +19,11 @@ export const handleCopyImg = (
     ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
 
     canvas.toBlob(async (blob) => {
-      const data = [
+      await navigator.clipboard.write([
         new ClipboardItem({
           [blob.type]: blob,
         }),
-      ];
-
-      await navigator.clipboard.write(data).then(
+      ]).then(
         () => {
           console.log("Copied to clipboard successfully!");
           callback();

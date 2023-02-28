@@ -71,7 +71,7 @@
 }
 @media screen and (max-width: 600px) {
   .main input[type="submit"] {
-    min-height: 40px;
+    height: 40px;
   }
 }
 .main .result {

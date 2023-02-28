@@ -7,6 +7,7 @@ import dog from "./dog.png";
 import Image from "next/image";
 import { draw } from "../services/draw";
 import Popup from "reactjs-popup";
+import { useLoading } from "../utils/hooks/useLoading";
 type chatType = "chat" | "draw";
 export interface ConversationListItem {
   choices: { text: string; isImage?: boolean }[];
@@ -24,7 +25,8 @@ function formatDate(date: Date): string {
   return `${y}-${m}-${d} ${h}:${minutes >= 10 ? minutes : "0" + minutes}`;
 }
 export default function Home() {
-  const [loading, setLoading] = useState(false);
+  const {loading, showLoading, hideLoading} = useLoading();
+  const [needFetch, setNeedFetch] = useState<boolean>(false);
   const [chatType, setChatType] = useState<chatType>("chat");
   const [errorMessage, setErrorMessage] = useState("");
   const [questionInput, setquestionInput] = useState("");
@@ -66,11 +68,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (loading) {
+    if (needFetch) {
       setquestionInput("");
       handleGenerate();
     }
-  }, [loading]);
+  }, [needFetch]);
 
   useEffect(() => {
     setconversationListToCache();
@@ -98,8 +100,9 @@ export default function Home() {
       date: formatDate(new Date()),
       choices: [{ text: questionInput }],
     });
-    setLoading(true);
+    showLoading();
     setconversationList(newList);
+    setNeedFetch(true);
   }
 
   function handleDrawSubmit() {
@@ -108,8 +111,9 @@ export default function Home() {
       date: formatDate(new Date()),
       choices: [{ text: questionInput }],
     });
-    setLoading(true);
+    showLoading();
     setdrawList(newList);
+    setNeedFetch(true);
   }
 
   async function handleGenerate() {
@@ -119,7 +123,8 @@ export default function Home() {
       await handleDrawListGenerate();
     }
     setquestionInput("");
-    setLoading(false);
+    hideLoading();
+    setNeedFetch(false);
   }
 
   async function handleConversationListGenerate() {
@@ -187,9 +192,11 @@ export default function Home() {
   function setconversationListToCache() {
     localStorage.setItem("conversationList", JSON.stringify(conversationList));
   }
+
   function setdrawListToCache() {
     localStorage.setItem("drawList", JSON.stringify(drawList));
   }
+
   function scrollToBottom() {
     if (!document || !window) return;
     const t = document.body.clientHeight;
@@ -210,6 +217,7 @@ export default function Home() {
   function changeChatType(type: chatType) {
     setChatType(type);
   }
+
   const ErrorModal = () => (
     <Popup open={!!errorMessage} closeOnDocumentClick>
       <div className={styles.error}>{errorMessage}</div>
@@ -240,11 +248,14 @@ export default function Home() {
         </div>
         <ChatList
           conversationList={chatType === "chat" ? conversationList : drawList}
+          showLoading={showLoading}
+          hideLoading={hideLoading}
         />
         <div className="formContainer">
           <form className="form" onSubmit={onSubmit}>
             <textarea
               name="question"
+              rows={2}
               placeholder="输入问题如：什么是贷款利率，或画一只小猫"
               value={questionInput}
               onChange={(e) => setquestionInput(e.target.value)}
