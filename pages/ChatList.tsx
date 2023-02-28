@@ -16,6 +16,7 @@ export default function ChatList(props: Props) {
   const [copyText, setCopyText] = useState<string>();
   const [isImage, setIsImage] = useState<boolean>(false);
   const longPress = useLongPress((e) => {
+    e.preventDefault()
     // @ts-ignore
     if (e.target?.className === "img") {
       // @ts-ignore
@@ -28,7 +29,10 @@ export default function ChatList(props: Props) {
     }
     setOpen(true);
   }, {
-    threshold: 1500
+    threshold: 1500,
+    onStart: (e) => e.preventDefault(),
+    onFinish: (e) => e.preventDefault(),
+    onMove: (e) => e.preventDefault(),
   });
   const closeModal = () => {
     setOpen(false);
